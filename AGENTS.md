@@ -5,5 +5,6 @@ stick, `src/index.js` the globals; `blip-deck.css` styles the deck only (page dr
 
 - Every change keeps `npm test` at 100% line, branch and function coverage; test through the DOM (happy-dom).
 - `npm run build` after a change under `src/`, and commit `dist/blip-deck.js`.
-- blip (`node tools/sync_deck.mjs`) and breadbin (`node tools/blip-deck/sync.mjs`) copy the build; check both after a
-  change to the element's markup, its attributes or the CSS. Do not publish or push unless asked.
+- blip and breadbin load a tagged build from jsDelivr; a release is a new tag (never move one), then the tag bumped
+  in both. Check both after a change to the element's markup, its attributes or the CSS. Do not publish or push
+  unless asked.

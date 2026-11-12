@@ -6,11 +6,11 @@ joystick and a game pad with two caps, and one input layer for touch, mouse, key
 [breadbin](https://github.com/jacobandresen/breadbin).
 
 ```html
-<link rel="stylesheet" href="blip-deck.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jacobandresen/blip-deck@v1.0.0/blip-deck.css">
 <div id="topbar" class="kiosk-bar">
   <blip-deck seats="2" buttons='[{"label":"JUMP"},{"label":"FIRE"}]'></blip-deck>
 </div>
-<script src="blip-deck.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/jacobandresen/blip-deck@v1.0.0/dist/blip-deck.js"></script>
 <script>
   BlipController.init({ canvas: document.querySelector('canvas'), buttons: [{ key: ' ', code: 'Space' }, { key: 'z', code: 'KeyZ' }] });
   BlipController.bindButtons(document.getElementById('fire-buttons'));
@@ -40,8 +40,10 @@ npm run build   # dist/blip-deck.js: src/ and lit in one classic script (esbuild
 npm test        # node:test on happy-dom; fails below 100% line, branch or function coverage
 ```
 
-`dist/` is committed: blip and breadbin copy `dist/blip-deck.js` and `blip-deck.css` with their sync scripts
-(`tools/sync_deck.mjs`, `tools/blip-deck/sync.mjs`).
+`dist/` is committed, and jsDelivr serves it from a tag: blip and breadbin load
+`https://cdn.jsdelivr.net/gh/jacobandresen/blip-deck@<tag>/dist/blip-deck.js` and `.../blip-deck.css`. To release, build,
+commit, push a new tag (`v1.0.1`), and move the tag in blip (its pages and `DECK` in `web/sw.js`) and in breadbin
+(`docs/play/index.html`). A published tag never changes.
 
 ## Licence
 
