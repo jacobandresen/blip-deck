@@ -1,0 +1,15 @@
+{
+  "name": "blip-deck",
+  "version": "1.0.0",
+  "description": "An arcade control deck web component: two stations, each a joystick and a game pad, with one input layer for touch, mouse, keyboard and gamepad.",
+  "type": "module",
+  "license": "MIT",
+  "exports": { ".": "./src/index.js", "./blip-deck.css": "./blip-deck.css" },
+  "files": ["src", "dist", "blip-deck.css"],
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "test": "node --test --experimental-test-coverage --test-coverage-include=src/** --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 test/"
+  },
+  "dependencies": { "lit": "3.3.3" },
+  "devDependencies": { "esbuild": "0.28.2", "happy-dom": "21.0.4", "@happy-dom/global-registrator": "21.0.4" }
+}
