@@ -1,8 +1,6 @@
-// The bundle's globals, for pages without modules: window.BlipController, window.BlipDeck, and <blip-deck>.
-import { BlipController } from './controller.js';
-import { BlipDeckElement, bindStick, lean } from './deck.js';
+// The <blip-deck> element. Importing this module defines it; the built dist/blip-deck.js does the same for a <script>.
+import { BlipDeck, LABELS } from './deck.js';
+import { gate, cross, TUNING } from './gate.js';
 
-export { BlipController, BlipDeckElement, bindStick, lean };
-export const BlipDeck = { bindStick, lean };
-Object.assign(window, { BlipController, BlipDeck });
-customElements.define('blip-deck', BlipDeckElement);
+export { BlipDeck, LABELS, gate, cross, TUNING };
+if (!customElements.get('blip-deck')) customElements.define('blip-deck', BlipDeck);

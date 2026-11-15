@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>blip-deck</title>
+<style>
+  body { margin: 0; padding: 16px; background: #0d0c10; color: #ddd; font: 14px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p { margin: 0 0 16px; color: #999; }
+  .demo { margin: 0 auto 28px; max-width: 760px; }
+  .demo h2 { font: 600 12px ui-monospace, monospace; color: #b7a; margin: 0 0 8px; }
+  .screen { height: 90px; border-radius: 10px 10px 0 0; background: #000; }
+  .wide { position: relative; height: 300px; max-width: 760px; margin: 0 auto 28px; background: #000; border-radius: 10px; }
+  .wide blip-deck { position: absolute; inset: 0; }
+  #log { position: fixed; right: 12px; top: 12px; font: 12px ui-monospace, monospace; color: #8c8; }
+</style>
+</head>
+<body>
+<h1>blip-deck</h1>
+<p>An arcade control deck in one tag. Press, drag and slide: the last input shows top right.</p>
+<div id="log"></div>
+<div id="demos"></div>
+<script src="dist/blip-deck.js"></script>
+<script>
+  const demos = [
+    ['one player, joystick', 'buttons=\'["FIRE"]\''],
+    ['one player, d-pad, two buttons', 'controls="pad" buttons=\'["A","B"]\''],
+    ['two players, joystick', 'seats="2" buttons=\'["A","B"]\''],
+    ['two players, d-pad', 'seats="2" controls="pad" buttons=\'["A","B"]\''],
+    ['station two idle (solo)', 'seats="2" solo buttons=\'["A","B"]\''],
+    ['no legends', 'buttons=\'["",""]\''],
+  ];
+  const html = demos.map(([title, attrs]) => `<div class="demo"><h2>${title}</h2><div class="screen"></div><blip-deck ${attrs}></blip-deck></div>`).join('') +
+    `<div class="demo"><h2>landscape, two players</h2></div><div class="wide"><blip-deck layout="landscape" seats="2" buttons='["A","B"]'></blip-deck></div>` +
+    `<div class="demo"><h2>landscape, d-pad</h2></div><div class="wide"><blip-deck layout="landscape" controls="pad" buttons='["FIRE"]'></blip-deck></div>`;
+  document.getElementById('demos').innerHTML = html;
+  addEventListener('blip-input', (e) => { document.getElementById('log').textContent = `${e.detail.name} ${e.detail.down ? 'down' : 'up'}`; });
+</script>
+</body>
+</html>

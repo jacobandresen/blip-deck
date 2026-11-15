@@ -1,10 +1,10 @@
 # Agent guide
 
-Keep it tight: plain functions, no layers. `src/controller.js` is the input layer, `src/deck.js` the element and the
-stick, `src/index.js` the globals; `blip-deck.css` styles the deck only (page dressing lives in the pages).
+Keep it small and plain: `src/deck.js` is the element, `src/gate.js` the stick's arithmetic, `src/blip-deck.css` its
+look, `src/index.js` defines it. The deck knows nothing of the pages that use it: no game names, no page styles,
+no globals. Its contract is attributes in, `blip-input` events out, `press()`, `release()`, `labels`, `tuning`.
 
-- Every change keeps `npm test` at 100% line, branch and function coverage; test through the DOM (happy-dom).
+- `npm test` stays at 100% line, branch and function coverage (happy-dom); test through the element.
+- `npm run test:browser` after a change to the look: every combination must fit without overlaps.
 - `npm run build` after a change under `src/`, and commit `dist/blip-deck.js`.
-- blip and breadbin load a tagged build from jsDelivr; a release is a new tag (never move one), then the tag bumped
-  in both. Check both after a change to the element's markup, its attributes or the CSS. Do not publish or push
-  unless asked.
+- A release is a new tag (never move one). Do not publish or push unless asked.
