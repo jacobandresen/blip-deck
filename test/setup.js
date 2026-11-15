@@ -1,29 +1,29 @@
-// A DOM for node:test (happy-dom), frames run by hand, and rects set by hand: happy-dom does no layout.
+// A DOM for node:test (happy-dom). happy-dom does no layout, so tests give elements their boxes by hand.
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 GlobalRegistrator.register({ url: 'http://localhost/' });
-const frames = new Map();
-let nextFrame = 1;
-globalThis.requestAnimationFrame = (fn) => { frames.set(nextFrame, fn); return nextFrame++; };
-globalThis.cancelAnimationFrame = (id) => frames.delete(id);
-/** Run the frames asked for so far. */
-export function frame() {
-  const due = [...frames.values()];
-  frames.clear();
-  for (const fn of due) fn();
-}
+
+// The deck's clock, moved by hand: hold(ms) is a finger staying down that long.
+let now = 0;
+performance.now = () => now;
+export function hold(ms = 50) { now += ms; }
+
 /** Give el a layout box. */
 export function box(el, left, top, width, height) {
   el.getBoundingClientRect = () => ({ left, top, width, height, right: left + width, bottom: top + height });
   return el;
 }
-export function pointer(target, type, x = 0, y = 0, o = {}) {
-  const e = new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, pointerType: 'mouse', clientX: x, clientY: y, ...o });
-  target.dispatchEvent(e);
-  return e;
+
+/** A mouse (or pen) event on the deck. */
+export function pointer(deck, type, x, y, o = {}) {
+  deck.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 1, pointerType: 'mouse', clientX: x, clientY: y, ...o }));
 }
-export function touches(type, list) {
-  const e = new Event(type);
-  e.touches = list.map(([clientX, clientY]) => ({ clientX, clientY }));
-  document.dispatchEvent(e);
+
+/** A touch event on the deck: `down` is every finger on the glass, `changed` the ones this event is about. */
+export function touch(deck, type, down, changed = down) {
+  const list = (pts) => pts.map(([identifier, clientX, clientY]) => ({ identifier, clientX, clientY }));
+  const e = new Event(type, { bubbles: true, cancelable: true });
+  Object.assign(e, { touches: list(down), changedTouches: list(changed) });
+  deck.dispatchEvent(e);
+  return e;
 }

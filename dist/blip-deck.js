@@ -1,29 +1,230 @@
-/* blip-deck (MIT) with lit (BSD-3-Clause): github.com/jacobandresen/blip-deck. Built by npm run build. */
-(()=>{var ie=new Set(["up","down","left","right","p2up","p2down","p2left","p2right"]),oe={ArrowUp:"up",KeyW:"up",ArrowDown:"down",KeyS:"down",ArrowLeft:"left",KeyA:"left",ArrowRight:"right",KeyD:"right"},St={ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right",Space:"button1",KeyZ:"button2",Start:"start",Select:"select"},Ct=["up","down","left","right"],_={canvas:null,gate:null,onInput:null,onStart:null,onSelect:null,feedback:null,click:null},N=null,G={},F={},ot=[],M=[],kt=[],L=null;function re(s,t){let e=s&&s.length?s:[{key:" ",code:"Space"}],n={};for(let i of Ct){let o="Arrow"+i[0].toUpperCase()+i.slice(1);n[i]={key:o,code:o}}e.forEach((i,o)=>{n["button"+(o+1)]={key:i.key,code:i.code}}),n.button2??=n.button1;for(let i in t)t[i]&&(n[i]=t[i]);return n}function le(s){return Object.keys(N||{}).find(t=>N[t].code===s)||oe[s]||null}function xt(s,t){if(!_.canvas||!s)return;let e=F[s.code]||0;if(t==="keydown"){if(F[s.code]=e+1,e)return}else if(e>1){F[s.code]=e-1;return}else delete F[s.code];_.canvas.dispatchEvent(new KeyboardEvent(t,{bubbles:!0,cancelable:!0,key:s.key,code:s.code}))}var Pt=s=>s!=="select"&&!!(_.gate&&_.gate()),it=(s,t)=>{(t!=="keydown"||!Pt())&&xt(s,t)};function j(s){try{_.click&&_.click(s)}catch{}}function wt(){try{_.feedback&&_.feedback()}catch{}}function ae(s,t){for(let e of ot)for(let n of e.querySelectorAll(`[data-blip~="${s}"]`))n.classList.toggle("blip-pressed",t)}function R(s,t,e={}){t=!!t;let n=s==="start"||s==="select";if(!(!N||!n&&!N[s]||t===!!G[s])){G[s]=t,ae(s,t);try{_.onInput&&_.onInput(s,t)}catch{}if(!Pt(s)){if(n){if(!t)return;e.silent||(j("menu"),wt());let i=s==="start"?_.onStart:_.onSelect;i&&i();return}e.silent||(xt(N[s],t?"keydown":"keyup"),t&&(e.silentClick||j(ie.has(s)?"dpad":"face"),wt()))}}}function ce(){for(let s of M)s.pend=!1,s.up();for(let s of kt)s();for(let s in G)G[s]&&R(s,!1)}function de(s){s.pend||(s.pend=!0,requestAnimationFrame(()=>{s.pend&&(s.pend=!1,s.up())}))}function he(s,t,e){return Math.hypot(Math.max(s.left-t,0,t-s.right),Math.max(s.top-e,0,e-s.bottom))}function pe(s,t){(t||!L||L.length!==M.length)&&(L=M.map(n=>n.el.getBoundingClientRect()));let e=new Map;for(let n of s){let i=n.clientX,o=n.clientY,l=-1,c=1/0,r=1/0;M.forEach((d,p)=>{let a=L[p],u=he(a,i,o);if(!a.width||u>d.slop)return;let m=Math.hypot(i-(a.left+a.width/2),o-(a.top+a.height/2));(u<c||u===c&&m<r)&&(c=u,r=m,l=p)}),l>=0&&!e.has(l)&&e.set(l,n)}M.forEach((n,i)=>{L[i].width&&(e.has(i)?(n.pend=!1,n.down(e.get(i),L[i])):n.on()&&de(n))})}addEventListener("resize",()=>{L=null});for(let s of["touchstart","touchmove","touchend","touchcancel"])document.addEventListener(s,t=>pe(t.touches,s==="touchstart"),{passive:!0});function Lt(s,t,e,n){let i=null;s.addEventListener("pointerdown",o=>{o.preventDefault(),i=o.pointerId;try{s.setPointerCapture(i)}catch{}o.pointerType!=="touch"&&t(o)}),e&&s.addEventListener("pointermove",o=>{o.pointerId===i&&(o.preventDefault(),o.pointerType!=="touch"&&e(o))});for(let o of["pointerup","pointercancel","lostpointercapture"])s.addEventListener(o,l=>{l.pointerId===i&&(i=null,l.pointerType!=="touch"&&n())})}function ue(s){if(s){Mt(s);for(let t of s.querySelectorAll("[data-blip]:not([data-blip-nopress])")){let e=t.getAttribute("data-blip").split(/\s+/).filter(Boolean),n=t.getAttribute("data-blip-kind"),i={el:t,slop:12,pend:!1,held:!1,on:()=>i.held};i.down=()=>{if(!i.held){i.held=!0,n&&j(n);for(let o of e)R(o,!0,{silentClick:!!n})}},i.up=()=>{if(i.held){i.held=!1;for(let o of e)R(o,!1)}},M.push(i),Lt(t,i.down,null,i.up)}}}function fe(s,t={}){if(!s)return;let e=t.dead??.32,n=t.names||{up:"up",down:"down",left:"left",right:"right"},i=(c,r)=>{R(n[c],r),s.querySelector(".dp-"+c)?.classList.toggle("blip-pressed",r)},o=(c,r=s.getBoundingClientRect())=>{let d=(c.clientX-(r.left+r.width/2))/(r.width/2),p=(c.clientY-(r.top+r.height/2))/(r.height/2);i("left",d<-e),i("right",d>e),i("up",p<-e),i("down",p>e),s.classList.add("blip-touched")},l=()=>{for(let c of Ct)i(c,!1);s.classList.remove("blip-touched")};M.push({el:s,slop:14,pend:!1,down:o,up:l,on:()=>s.classList.contains("blip-touched")}),Lt(s,o,o,l)}function $e(s,t={}){if(!s)return;let e=t.dead??.018,n=t.idleMs??70,i=null,o=null,l=0,c=0,r=null,d=null,p={up:!1,down:!1},a=(f,b)=>Math.atan2(b-(d.top+d.height/2),f-(d.left+d.width/2)),u=(f,b)=>{for(let[S,C]of[["up",f],["down",b]])C!==p[S]&&(p[S]=C,C&&j("dpad"),it(t[S],C?"keydown":"keyup"))},m=()=>{clearTimeout(r),r=null},g=()=>{m(),u(!1,!1),s.classList.remove("active"),i=o=d=null,c=0};kt.push(g),s.addEventListener("pointerdown",f=>{if(f.preventDefault(),o===null){t.onInteract&&t.onInteract(),o=f.pointerId;try{s.setPointerCapture(o)}catch{}d=s.getBoundingClientRect(),i=a(f.clientX,f.clientY),l=0,s.classList.add("active")}}),s.addEventListener("pointermove",f=>{if(f.pointerId!==o)return;f.preventDefault();let b=a(f.clientX,f.clientY),S=(b-i+3*Math.PI)%(2*Math.PI)-Math.PI;i=b,l+=Math.abs(S),c+=S,c>e?(c=0,u(!1,!0)):c<-e&&(c=0,u(!0,!1)),m(),r=setTimeout(()=>{r=null,c=0,u(!1,!1)},n)});let A=f=>{f.type!=="pointercancel"&&f.pointerId!==o||(f.type==="pointerup"&&l<.08&&(t.onTap&&t.onTap(),t.tap&&(j("menu"),it(t.tap,"keydown"),it(t.tap,"keyup"))),g())};s.addEventListener("pointerup",A),s.addEventListener("pointercancel",A),s.addEventListener("lostpointercapture",f=>{f.pointerId===o&&g()})}function me(){for(let[s,t]of[["keydown",!0],["keyup",!1]])document.addEventListener(s,e=>{let n=le(e.code);n&&R(n,t,{silent:!0})})}function ge(s){if(typeof s!="function")return;let t=e=>n=>{St[n]&&R(St[n],e)};s(t(!0),t(!1))}function Mt(s){s&&!ot.includes(s)&&ot.push(s)}function ye(s={}){for(let t in _)s[t]!==void 0&&(_[t]=s[t]);return N=re(s.buttons,s.keys),z}var z={init:ye,set:R,releaseAll:ce,registerVisual:Mt,bindButtons:ue,bindDpad:fe,bindDial:$e,bindKeyboard:me,bindGamepad:ge};var Z=globalThis,tt=Z.ShadowRoot&&(Z.ShadyCSS===void 0||Z.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,Tt=Symbol(),Rt=new WeakMap,J=class{constructor(t,e,n){if(this._$cssResult$=!0,n!==Tt)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o,e=this.t;if(tt&&t===void 0){let n=e!==void 0&&e.length===1;n&&(t=Rt.get(e)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),n&&Rt.set(e,t))}return t}toString(){return this.cssText}},Ut=s=>new J(typeof s=="string"?s:s+"",void 0,Tt);var Ot=(s,t)=>{if(tt)s.adoptedStyleSheets=t.map(e=>e instanceof CSSStyleSheet?e:e.styleSheet);else for(let e of t){let n=document.createElement("style"),i=Z.litNonce;i!==void 0&&n.setAttribute("nonce",i),n.textContent=e.cssText,s.appendChild(n)}},rt=tt?s=>s:s=>s instanceof CSSStyleSheet?(t=>{let e="";for(let n of t.cssRules)e+=n.cssText;return Ut(e)})(s):s;var{is:_e,defineProperty:ve,getOwnPropertyDescriptor:Ae,getOwnPropertyNames:be,getOwnPropertySymbols:Ee,getPrototypeOf:Se}=Object,et=globalThis,Ht=et.trustedTypes,we=Ht?Ht.emptyScript:"",Ce=et.reactiveElementPolyfillSupport,V=(s,t)=>s,lt={toAttribute(s,t){switch(t){case Boolean:s=s?we:null;break;case Object:case Array:s=s==null?s:JSON.stringify(s)}return s},fromAttribute(s,t){let e=s;switch(t){case Boolean:e=s!==null;break;case Number:e=s===null?null:Number(s);break;case Object:case Array:try{e=JSON.parse(s)}catch{e=null}}return e}},Nt=(s,t)=>!_e(s,t),It={attribute:!0,type:String,converter:lt,reflect:!1,useDefault:!1,hasChanged:Nt};Symbol.metadata??=Symbol("metadata"),et.litPropertyMetadata??=new WeakMap;var w=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=It){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){let n=Symbol(),i=this.getPropertyDescriptor(t,n,e);i!==void 0&&ve(this.prototype,t,i)}}static getPropertyDescriptor(t,e,n){let{get:i,set:o}=Ae(this.prototype,t)??{get(){return this[e]},set(l){this[e]=l}};return{get:i,set(l){let c=i?.call(this);o?.call(this,l),this.requestUpdate(t,c,n)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??It}static _$Ei(){if(this.hasOwnProperty(V("elementProperties")))return;let t=Se(this);t.finalize(),t.l!==void 0&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(V("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(V("properties"))){let e=this.properties,n=[...be(e),...Ee(e)];for(let i of n)this.createProperty(i,e[i])}let t=this[Symbol.metadata];if(t!==null){let e=litPropertyMetadata.get(t);if(e!==void 0)for(let[n,i]of e)this.elementProperties.set(n,i)}this._$Eh=new Map;for(let[e,n]of this.elementProperties){let i=this._$Eu(e,n);i!==void 0&&this._$Eh.set(i,e)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){let e=[];if(Array.isArray(t)){let n=new Set(t.flat(1/0).reverse());for(let i of n)e.unshift(rt(i))}else t!==void 0&&e.push(rt(t));return e}static _$Eu(t,e){let n=e.attribute;return n===!1?void 0:typeof n=="string"?n:typeof t=="string"?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),this.renderRoot!==void 0&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){let t=new Map,e=this.constructor.elementProperties;for(let n of e.keys())this.hasOwnProperty(n)&&(t.set(n,this[n]),delete this[n]);t.size>0&&(this._$Ep=t)}createRenderRoot(){let t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return Ot(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,n){this._$AK(t,n)}_$ET(t,e){let n=this.constructor.elementProperties.get(t),i=this.constructor._$Eu(t,n);if(i!==void 0&&n.reflect===!0){let o=(n.converter?.toAttribute!==void 0?n.converter:lt).toAttribute(e,n.type);this._$Em=t,o==null?this.removeAttribute(i):this.setAttribute(i,o),this._$Em=null}}_$AK(t,e){let n=this.constructor,i=n._$Eh.get(t);if(i!==void 0&&this._$Em!==i){let o=n.getPropertyOptions(i),l=typeof o.converter=="function"?{fromAttribute:o.converter}:o.converter?.fromAttribute!==void 0?o.converter:lt;this._$Em=i;let c=l.fromAttribute(e,o.type);this[i]=c??this._$Ej?.get(i)??c,this._$Em=null}}requestUpdate(t,e,n,i=!1,o){if(t!==void 0){let l=this.constructor;if(i===!1&&(o=this[t]),n??=l.getPropertyOptions(t),!((n.hasChanged??Nt)(o,e)||n.useDefault&&n.reflect&&o===this._$Ej?.get(t)&&!this.hasAttribute(l._$Eu(t,n))))return;this.C(t,e,n)}this.isUpdatePending===!1&&(this._$ES=this._$EP())}C(t,e,{useDefault:n,reflect:i,wrapped:o},l){n&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,l??e??this[t]),o!==!0||l!==void 0)||(this._$AL.has(t)||(this.hasUpdated||n||(e=void 0),this._$AL.set(t,e)),i===!0&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(e){Promise.reject(e)}let t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(let[i,o]of this._$Ep)this[i]=o;this._$Ep=void 0}let n=this.constructor.elementProperties;if(n.size>0)for(let[i,o]of n){let{wrapped:l}=o,c=this[i];l!==!0||this._$AL.has(i)||c===void 0||this.C(i,void 0,o,c)}}let t=!1,e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(n=>n.hostUpdate?.()),this.update(e)):this._$EM()}catch(n){throw t=!1,this._$EM(),n}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(e=>e.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(e=>this._$ET(e,this[e])),this._$EM()}updated(t){}firstUpdated(t){}};w.elementStyles=[],w.shadowRootOptions={mode:"open"},w[V("elementProperties")]=new Map,w[V("finalized")]=new Map,Ce?.({ReactiveElement:w}),(et.reactiveElementVersions??=[]).push("2.1.2");var ft=globalThis,Dt=s=>s,st=ft.trustedTypes,Bt=st?st.createPolicy("lit-html",{createHTML:s=>s}):void 0,qt="$lit$",k=`lit$${Math.random().toFixed(9).slice(2)}$`,Xt="?"+k,ke=`<${Xt}>`,O=document,Q=()=>O.createComment(""),q=s=>s===null||typeof s!="object"&&typeof s!="function",$t=Array.isArray,xe=s=>$t(s)||typeof s?.[Symbol.iterator]=="function",at=`[ 	
-\f\r]`,K=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,jt=/-->/g,zt=/>/g,T=RegExp(`>|${at}(?:([^\\s"'>=/]+)(${at}*=${at}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),Vt=/'/g,Kt=/"/g,Yt=/^(?:script|style|textarea|title)$/i,mt=s=>(t,...e)=>({_$litType$:s,strings:t,values:e}),E=mt(1),ze=mt(2),Ve=mt(3),H=Symbol.for("lit-noChange"),$=Symbol.for("lit-nothing"),Qt=new WeakMap,U=O.createTreeWalker(O,129);function Wt(s,t){if(!$t(s)||!s.hasOwnProperty("raw"))throw Error("invalid template strings array");return Bt!==void 0?Bt.createHTML(t):t}var Pe=(s,t)=>{let e=s.length-1,n=[],i,o=t===2?"<svg>":t===3?"<math>":"",l=K;for(let c=0;c<e;c++){let r=s[c],d,p,a=-1,u=0;for(;u<r.length&&(l.lastIndex=u,p=l.exec(r),p!==null);)u=l.lastIndex,l===K?p[1]==="!--"?l=jt:p[1]!==void 0?l=zt:p[2]!==void 0?(Yt.test(p[2])&&(i=RegExp("</"+p[2],"g")),l=T):p[3]!==void 0&&(l=T):l===T?p[0]===">"?(l=i??K,a=-1):p[1]===void 0?a=-2:(a=l.lastIndex-p[2].length,d=p[1],l=p[3]===void 0?T:p[3]==='"'?Kt:Vt):l===Kt||l===Vt?l=T:l===jt||l===zt?l=K:(l=T,i=void 0);let m=l===T&&s[c+1].startsWith("/>")?" ":"";o+=l===K?r+ke:a>=0?(n.push(d),r.slice(0,a)+qt+r.slice(a)+k+m):r+k+(a===-2?c:m)}return[Wt(s,o+(s[e]||"<?>")+(t===2?"</svg>":t===3?"</math>":"")),n]},X=class s{constructor({strings:t,_$litType$:e},n){let i;this.parts=[];let o=0,l=0,c=t.length-1,r=this.parts,[d,p]=Pe(t,e);if(this.el=s.createElement(d,n),U.currentNode=this.el.content,e===2||e===3){let a=this.el.content.firstChild;a.replaceWith(...a.childNodes)}for(;(i=U.nextNode())!==null&&r.length<c;){if(i.nodeType===1){if(i.hasAttributes())for(let a of i.getAttributeNames())if(a.endsWith(qt)){let u=p[l++],m=i.getAttribute(a).split(k),g=/([.?@])?(.*)/.exec(u);r.push({type:1,index:o,name:g[2],strings:m,ctor:g[1]==="."?dt:g[1]==="?"?ht:g[1]==="@"?pt:B}),i.removeAttribute(a)}else a.startsWith(k)&&(r.push({type:6,index:o}),i.removeAttribute(a));if(Yt.test(i.tagName)){let a=i.textContent.split(k),u=a.length-1;if(u>0){i.textContent=st?st.emptyScript:"";for(let m=0;m<u;m++)i.append(a[m],Q()),U.nextNode(),r.push({type:2,index:++o});i.append(a[u],Q())}}}else if(i.nodeType===8)if(i.data===Xt)r.push({type:2,index:o});else{let a=-1;for(;(a=i.data.indexOf(k,a+1))!==-1;)r.push({type:7,index:o}),a+=k.length-1}o++}}static createElement(t,e){let n=O.createElement("template");return n.innerHTML=t,n}};function D(s,t,e=s,n){if(t===H)return t;let i=n!==void 0?e._$Co?.[n]:e._$Cl,o=q(t)?void 0:t._$litDirective$;return i?.constructor!==o&&(i?._$AO?.(!1),o===void 0?i=void 0:(i=new o(s),i._$AT(s,e,n)),n!==void 0?(e._$Co??=[])[n]=i:e._$Cl=i),i!==void 0&&(t=D(s,i._$AS(s,t.values),i,n)),t}var ct=class{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){let{el:{content:e},parts:n}=this._$AD,i=(t?.creationScope??O).importNode(e,!0);U.currentNode=i;let o=U.nextNode(),l=0,c=0,r=n[0];for(;r!==void 0;){if(l===r.index){let d;r.type===2?d=new Y(o,o.nextSibling,this,t):r.type===1?d=new r.ctor(o,r.name,r.strings,this,t):r.type===6&&(d=new ut(o,this,t)),this._$AV.push(d),r=n[++c]}l!==r?.index&&(o=U.nextNode(),l++)}return U.currentNode=O,i}p(t){let e=0;for(let n of this._$AV)n!==void 0&&(n.strings!==void 0?(n._$AI(t,n,e),e+=n.strings.length-2):n._$AI(t[e])),e++}},Y=class s{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,n,i){this.type=2,this._$AH=$,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=n,this.options=i,this._$Cv=i?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode,e=this._$AM;return e!==void 0&&t?.nodeType===11&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=D(this,t,e),q(t)?t===$||t==null||t===""?(this._$AH!==$&&this._$AR(),this._$AH=$):t!==this._$AH&&t!==H&&this._(t):t._$litType$!==void 0?this.$(t):t.nodeType!==void 0?this.T(t):xe(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==$&&q(this._$AH)?this._$AA.nextSibling.data=t:this.T(O.createTextNode(t)),this._$AH=t}$(t){let{values:e,_$litType$:n}=t,i=typeof n=="number"?this._$AC(t):(n.el===void 0&&(n.el=X.createElement(Wt(n.h,n.h[0]),this.options)),n);if(this._$AH?._$AD===i)this._$AH.p(e);else{let o=new ct(i,this),l=o.u(this.options);o.p(e),this.T(l),this._$AH=o}}_$AC(t){let e=Qt.get(t.strings);return e===void 0&&Qt.set(t.strings,e=new X(t)),e}k(t){$t(this._$AH)||(this._$AH=[],this._$AR());let e=this._$AH,n,i=0;for(let o of t)i===e.length?e.push(n=new s(this.O(Q()),this.O(Q()),this,this.options)):n=e[i],n._$AI(o),i++;i<e.length&&(this._$AR(n&&n._$AB.nextSibling,i),e.length=i)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){let n=Dt(t).nextSibling;Dt(t).remove(),t=n}}setConnected(t){this._$AM===void 0&&(this._$Cv=t,this._$AP?.(t))}},B=class{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,n,i,o){this.type=1,this._$AH=$,this._$AN=void 0,this.element=t,this.name=e,this._$AM=i,this.options=o,n.length>2||n[0]!==""||n[1]!==""?(this._$AH=Array(n.length-1).fill(new String),this.strings=n):this._$AH=$}_$AI(t,e=this,n,i){let o=this.strings,l=!1;if(o===void 0)t=D(this,t,e,0),l=!q(t)||t!==this._$AH&&t!==H,l&&(this._$AH=t);else{let c=t,r,d;for(t=o[0],r=0;r<o.length-1;r++)d=D(this,c[n+r],e,r),d===H&&(d=this._$AH[r]),l||=!q(d)||d!==this._$AH[r],d===$?t=$:t!==$&&(t+=(d??"")+o[r+1]),this._$AH[r]=d}l&&!i&&this.j(t)}j(t){t===$?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}},dt=class extends B{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===$?void 0:t}},ht=class extends B{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==$)}},pt=class extends B{constructor(t,e,n,i,o){super(t,e,n,i,o),this.type=5}_$AI(t,e=this){if((t=D(this,t,e,0)??$)===H)return;let n=this._$AH,i=t===$&&n!==$||t.capture!==n.capture||t.once!==n.once||t.passive!==n.passive,o=t!==$&&(n===$||i);i&&this.element.removeEventListener(this.name,this,n),o&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){typeof this._$AH=="function"?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}},ut=class{constructor(t,e,n){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=n}get _$AU(){return this._$AM._$AU}_$AI(t){D(this,t)}};var Le=ft.litHtmlPolyfillSupport;Le?.(X,Y),(ft.litHtmlVersions??=[]).push("3.3.3");var Ft=(s,t,e)=>{let n=e?.renderBefore??t,i=n._$litPart$;if(i===void 0){let o=e?.renderBefore??null;n._$litPart$=i=new Y(t.insertBefore(Q(),o),o,void 0,e??{})}return i._$AI(s),i};var gt=globalThis,x=class extends w{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){let t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){let e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=Ft(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return H}};x._$litElement$=!0,x.finalized=!0,gt.litElementHydrateSupport?.({LitElement:x});var Me=gt.litElementPolyfillSupport;Me?.({LitElement:x});(gt.litElementVersions??=[]).push("4.2.2");var Re=2,Gt=[{id:"",dirs:["up","right","down","left"],cap:"button"},{id:"-p2",dirs:["p2up","p2right","p2down","p2left"],cap:"p2button"}],Te=["data-caps","data-players","data-seats"],Zt="M38 2H62Q68 2 68 8V29Q68 32 71 32H92Q98 32 98 38V62Q98 68 92 68H71Q68 68 68 71V92Q68 98 62 98H38Q32 98 32 92V71Q32 68 29 68H8Q2 68 2 62V38Q2 32 8 32H29Q32 32 32 29V8Q32 2 38 2Z",Ue=s=>E`<svg class="snes-dp-body" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id=${"dpg"+s} x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="dp-s0"/><stop offset=".55" class="dp-s1"/><stop offset="1" class="dp-s2"/></linearGradient><filter id=${"dps"+s} x="-10%" y="-10%" width="120%" height="125%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.4" flood-color="#000" flood-opacity=".75"/></filter></defs><path d=${Zt} fill=${`url(#dpg${s})`} filter=${`url(#dps${s})`}/><path class="dp-rim" d=${Zt}/><circle class="dp-dimple" cx="50" cy="50" r="7"/></svg>`,nt=class extends x{static properties={buttons:{type:Array},capLabel:{attribute:"cap-label"},seats:{type:Number}};createRenderRoot(){return this.renderOptions.renderBefore=this.firstChild,this}connectedCallback(){super.connectedCallback(),this.classList.add("deck-panel"),this.performUpdate()}disconnectedCallback(){super.disconnectedCallback();for(let t of Te)document.documentElement.removeAttribute(t)}render(){let t=!!this.buttons,e=this.buttons||[{}],n=this.seats===2,i=e.length<2?[e[0],e[0]]:e,o=document.documentElement;o.setAttribute("data-caps","4"),o.setAttribute("data-players","2"),n?o.removeAttribute("data-seats"):o.setAttribute("data-seats","1");let l=(r,d,p,a)=>{let u=p&&!n?null:i[a],m=u&&(t?d.cap+(a+1):!p&&r?"button1":null),g=u&&t?u.label||this.capLabel||"FIRE":"",A=`${r?`snes-btn cap${a+1}`:"arcade-btn lettered"}${u?"":" spare"}${e.length===2&&a?" alt":""}`,f=g?E`<small class="cap-legend" aria-hidden="true">${g}</small>`:$;return r?E`<button type="button" class=${A} data-blip=${m||$} aria-label=${g||$}><span></span>${f}</button>`:E`<div class=${A} data-blip=${m||$} aria-label=${g||$}><span class="arcade-btn-cap"></span>${f}</div>`},c=(r,d,p)=>Array.from({length:Re},(a,u)=>l(r,d,p,u));return E`${Gt.map((r,d)=>E`<div class="deck-side" id=${"deck-p"+(d+1)}><div class="stick-base" id=${"stick-base"+r.id}><div class="stick-boot"></div><div class="stick-handle"><div class="stick-shaft"></div><div class="stick-ball"></div></div></div><div class="fire-buttons four" id=${"fire-buttons"+r.id}>${c(!1,r,d)}</div></div>`)}${Gt.map((r,d)=>E`<div class=${d?"snes-pad second":"snes-pad"} id=${"snes-pad"+r.id} aria-hidden="true"><div class="snes-shell"><div class="snes-dpad">${Ue(r.id||"-p1")}${["up","right","down","left"].map((p,a)=>E`<span class=${"snes-dp-seg dp-"+p} data-blip=${r.dirs[a]} data-blip-nopress></span>`)}</div><div class="snes-face four">${c(!0,r,d)}</div>${d?$:E`<span class="snes-wordmark" aria-hidden="true">BLIP</span>`}</div></div>`)}`}};function Jt(s,t={}){let e=s.stick,n=s.fire,i=t.who||0,o=t.tuning||{};if(!e)return()=>{};let l=o.engage??16,c=o.release??9,r=o.maxR??46,d=o.hyst??8,p={0:["up"],45:["up","right"],90:["right"],135:["down","right"],180:["down"],225:["down","left"],270:["left"],315:["up","left"]},a=null,u=!1,m=null,g=null,A=null,f=0,b=0,S={};function C(h){if(h!==m){m=h;for(let y of["up","down","left","right"]){let v=h!==null&&p[h].includes(y);!!S[y]!==v&&(S[y]=v,z.set(s.dirs[y],v))}}}function ee(h){let y=h.clientX-g.x,v=h.clientY-g.y,P=Math.hypot(y,v);if(P>r){let Et=1-r/P;g.x+=y*Et,g.y+=v*Et,y=h.clientX-g.x,v=h.clientY-g.y,P=r}if(u=P>(u?c:l),!u)return C(null);let bt=(Math.atan2(y,-v)*180/Math.PI+360)%360,ne=m!==null&&Math.abs((bt-m+540)%360-180)<=22.5+d;C(ne?m:Math.round(bt/45)%8*45)}function I(){a=g=A=null,u=!1,cancelAnimationFrame(f),f=b=0,C(null),removeEventListener("pointermove",_t,!0),removeEventListener("pointerup",W,!0),removeEventListener("pointercancel",W,!0)}function se(h){if(t.zone)return t.zone.contains(h.target);if(!e.getBoundingClientRect().width)return!1;let y=e.querySelector(".stick-ball").getBoundingClientRect();if(e.contains(h.target)||h.clientX>=y.left&&h.clientX<=y.right&&h.clientY>=y.top&&h.clientY<=y.bottom)return!0;if(t.split){let P=(t.bar||e.closest("blip-deck")).getBoundingClientRect();if(h.clientX<P.left+P.width/2!=(i===0))return!1}if(!n)return!0;let v=n.getBoundingClientRect();return!h.target.closest?.(".fire-buttons")&&!(v.width&&h.clientX>=v.left-6)}function yt(){f=0;let h=A;A=null,h&&(b=performance.now()+8,ee(h))}function _t(h){h.pointerId===a&&(h.preventDefault(),A=h,performance.now()>=b?yt():f||(f=requestAnimationFrame(yt)))}function W(h){(h.type==="pointercancel"||h.pointerId===a)&&I()}function vt(h){t.active&&!t.active()||(a!==null&&I(),se(h)&&(h.preventDefault(),a=h.pointerId,g={x:h.clientX,y:h.clientY},addEventListener("pointermove",_t,!0),addEventListener("pointerup",W,!0),addEventListener("pointercancel",W,!0)))}function At(){document.hidden&&I()}return addEventListener("pointerdown",vt,!0),addEventListener("blur",I),document.addEventListener("visibilitychange",At),()=>{I(),removeEventListener("pointerdown",vt,!0),removeEventListener("blur",I),document.removeEventListener("visibilitychange",At)}}function te(s,t,e){t&&e&&(t*=Math.SQRT1_2,e*=Math.SQRT1_2),s.style.setProperty("--dx",t),s.style.setProperty("--dy",e)}var Oe={bindStick:Jt,lean:te};Object.assign(window,{BlipController:z,BlipDeck:Oe});customElements.define("blip-deck",nt);})();
-/*! Bundled license information:
+/* blip-deck (MIT): github.com/jacobandresen/blip-deck */
+(()=>{var v=`/* <blip-deck>'s look, inside its shadow root. Everything is drawn with CSS and one inline SVG: no images or fonts.
+   Theme it from outside with these custom properties, or with ::part(panel | station | stick | dpad | buttons | button):
+     --blip-deck-tilt      how far the panel leans back (24deg; 0 in landscape)
+     --blip-deck-cap       a button's size (sized from the station's width by default)
+     --blip-deck-panel     the panel's background
+     --blip-deck-ball      the joystick's ball
+     --blip-deck-button1, --blip-deck-button2, --blip-deck-p2-button2   button colours */
+:host {
+  --tilt: var(--blip-deck-tilt, 24deg);
+  --red: var(--blip-deck-button1, #d9302a);
+  display: block;
+  position: relative;
+  container-type: inline-size;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+:host([layout="landscape"]) { --tilt: 0deg; }
 
-@lit/reactive-element/css-tag.js:
-  (**
-   * @license
-   * Copyright 2019 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
+/* ---- The panel: black moulded plastic, lit along its top edge, leaning back ---- */
+.panel {
+  display: flex;
+  min-height: 100%;
+  box-sizing: border-box;
+  border-radius: 14px 14px 0 0;
+  background: var(--blip-deck-panel,
+    linear-gradient(180deg, #ffffff30 0 1px, #0008 2px 5px, transparent 14px),
+    radial-gradient(120% 90% at 50% 0%, #ffffff12, transparent 60%),
+    linear-gradient(180deg, #2c2a31, #151418));
+  box-shadow: inset 0 -12px 20px #0007, 0 -10px 24px -10px #000a;
+  transform: perspective(160cqi) rotateX(var(--tilt));
+  transform-origin: 50% 100%;
+  transform-style: preserve-3d;
+  position: relative; /* children put inside the deck are placed on the panel */
+}
+/* A station is a container, so its row (and everything sized off --cap) measures the station, not the deck. */
+.station {
+  flex: 1 1 0;
+  min-width: 0;
+  container: station / inline-size;
+  transform-style: preserve-3d;
+}
+.row {
+  --cap: var(--blip-deck-cap, clamp(36px, 15cqi, 60px));
+  --stick-w: calc(var(--cap) * 1.75);
+  --edge: 10px; /* room at the panel's edge */
+  --mid: 10px;  /* room toward the other player: wider with two, so each player's controls read as their own */
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: calc(var(--cap) * 0.4);
+  padding: calc(var(--cap) * 0.45) var(--mid) calc(var(--cap) * 0.3) var(--edge);
+  transform-style: preserve-3d;
+}
+:host([seats="2"]) .row { --mid: 18px; }
+.station[data-who="1"] .row { padding-left: var(--mid); padding-right: var(--edge); }
+.station + .station { box-shadow: inset 2px 0 0 -1px #0009, inset 3px 0 0 -1px #ffffff0c; }
+.station[aria-disabled] { --red: #3a3b40; filter: saturate(0.4) brightness(0.8); }
 
-@lit/reactive-element/reactive-element.js:
-lit-html/lit-html.js:
-lit-element/lit-element.js:
-  (**
-   * @license
-   * Copyright 2017 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
+/* ---- Joystick: a washer flat on the panel, a chrome shaft and a red ball standing up out of it ---- */
+.stick, .dpad { position: relative; flex: none; width: var(--stick-w); aspect-ratio: 1; }
+/* the stick's box holds the ball standing above the washer, so nothing overlaps it */
+.stick { aspect-ratio: auto; height: calc(var(--cap) * 2.4); }
+:host([controls="pad"]) .stick, :host(:not([controls="pad"])) .dpad { display: none; }
+.stick { transform-style: preserve-3d; cursor: grab; }
+.washer {
+  position: absolute;
+  left: calc(50% - var(--cap) * 0.6);
+  bottom: calc(var(--cap) * 0.12);
+  width: calc(var(--cap) * 1.2);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #000 0 20%, transparent 23%),
+    conic-gradient(from 22.5deg, #8d8372 0 2deg, #26231f 3deg 43deg, #8d8372 44deg 46deg, #26231f 47deg 88deg,
+      #8d8372 89deg 91deg, #26231f 92deg 133deg, #8d8372 134deg 136deg, #26231f 137deg 178deg, #8d8372 179deg 181deg,
+      #26231f 182deg 223deg, #8d8372 224deg 226deg, #26231f 227deg 268deg, #8d8372 269deg 271deg, #26231f 272deg 313deg,
+      #8d8372 314deg 316deg, #26231f 317deg 358deg, #8d8372 359deg);
+  box-shadow: 0 0 0 calc(var(--cap) * 0.08) #111, 0 0 0 calc(var(--cap) * 0.1) #ffffff1c, 0 6px 10px #000c,
+    inset 0 2px 6px #000;
+}
+.lever {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--cap) * 0.72);
+  transform-style: preserve-3d;
+  transform: rotateX(calc(-1 * var(--tilt) - 4deg - var(--dy, 0) * 14deg)) rotate(calc(var(--dx, 0) * 18deg));
+  transition: transform 55ms ease-out;
+}
+.shaft {
+  position: absolute;
+  left: calc(var(--cap) * -0.09);
+  bottom: 0;
+  width: calc(var(--cap) * 0.18);
+  height: calc(var(--cap) * 0.7);
+  border-radius: 40% 40% 12% 12% / 18% 18% 6% 6%;
+  background: linear-gradient(90deg, #161719, #65696b 12%, #e5e5df 29%, #fffef2 39%, #9da1a0 52%, #393c3e 73%, #171719 88%, #888a86);
+}
+.ball {
+  position: absolute;
+  left: calc(var(--cap) * -0.58);
+  bottom: calc(var(--cap) * 0.5);
+  width: calc(var(--cap) * 1.16);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--blip-deck-ball,
+    radial-gradient(circle at 34% 24%, #fff 0 4%, #ffffffa0 9%, transparent 24%),
+    radial-gradient(circle at 46% 40%, #ff6a52, #e0281b 45%, #a0120a 75%, #5e0703));
+  box-shadow: 0 8px 14px #0009, inset -4px -6px 10px #30000080;
+}
 
-lit-html/is-server.js:
-  (**
-   * @license
-   * Copyright 2022 Google LLC
-   * SPDX-License-Identifier: BSD-3-Clause
-   *)
-*/
+/* ---- D-pad: a moulded black cross in a round recess; a pressed arm glows ---- */
+.dpad::before { content: ''; position: absolute; inset: -4%; border-radius: 50%;
+  background: radial-gradient(circle at 42% 32%, #34302b, #171513 63%, #080808); box-shadow: inset 0 3px 7px #000d, 0 1px 0 #ffffff20; }
+.dpad svg { position: absolute; inset: 6%; overflow: visible; filter: drop-shadow(0 2px 2px #000c); }
+.dpad path { fill: url(#plastic); stroke: #ffe7c938; stroke-width: 0.9; }
+.dpad stop { stop-color: #55545c; transition: stop-color 60ms; }
+.dpad stop + stop { stop-color: #2a292e; }
+.dpad stop + stop + stop { stop-color: #18171b; }
+.dpad:has([aria-pressed="true"]) stop { stop-color: #8a5a3a; }
+.dpad:has([aria-pressed="true"]) stop + stop { stop-color: #5c3a2c; }
+.dpad:has([aria-pressed="true"]) stop + stop + stop { stop-color: #3c2620; }
+.dpad circle { fill: #0005; stroke: #ffffff12; stroke-width: 0.8; }
+.arm { position: absolute; opacity: 0; transition: opacity 50ms; border-radius: 6px;
+  background: linear-gradient(var(--to), #f08a3a, #e4342b 45%, transparent); }
+.arm.up    { --to: 180deg; inset: 8% 37% 50% 37%; }
+.arm.down  { --to: 0deg;   inset: 50% 37% 8% 37%; }
+.arm.left  { --to: 90deg;  inset: 37% 50% 37% 8%; }
+.arm.right { --to: 270deg; inset: 37% 8% 37% 50%; }
+.arm[aria-pressed="true"] { opacity: 0.95; }
+
+/* ---- Buttons: a dome of coloured plastic in a machined bezel, the legend printed above ---- */
+.caps {
+  display: flex;
+  gap: calc(var(--cap) * 0.3);
+  padding: calc(var(--cap) * 0.16);
+  margin-top: 12px;
+  border-radius: calc(var(--cap) * 0.6);
+  background: #0000002a;
+  box-shadow: inset 0 2px 4px #0008, 0 1px 0 #ffffff12;
+}
+.cap {
+  --c: var(--red);
+  position: relative;
+  width: var(--cap);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  background: radial-gradient(circle, #0b0909 0 59%, transparent 61%),
+    conic-gradient(from -48deg, #e4c69c, #765a3f 11%, #30251f 24%, #171719 43%, #342920 59%, #947451 76%, #dbc09a 91%, #e4c69c);
+  box-shadow: 0 3px 0 #352b24, 0 5px 0 #100e10, 2px 8px 8px #000b, inset 0 1px #fff6e194;
+  transition: transform 50ms, box-shadow 50ms;
+}
+.cap + .cap { --c: var(--blip-deck-button2, #2f76d0); }
+.station[data-who="1"] .cap + .cap { --c: var(--blip-deck-p2-button2, #139a7a); }
+.station[aria-disabled] .cap { --c: #3a3b40; }
+.cap::before {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 24%, #ffffffd0 0 6%, #ffffff30 16%, transparent 34%),
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--c), #fff 30%), var(--c) 46%,
+      color-mix(in srgb, var(--c), #000 45%) 80%, color-mix(in srgb, var(--c), #000 70%));
+  box-shadow: inset 0 -6px 9px #1008, 0 2px 4px #000a;
+  transition: transform 50ms, filter 50ms, box-shadow 50ms;
+}
+.cap[aria-pressed="true"] { transform: translateY(2px); box-shadow: 0 1px 0 #100e10, 0 2px 4px #000c, inset 0 2px 6px #000d; }
+.cap[aria-pressed="true"]::before { transform: scale(0.91); filter: brightness(1.15);
+  box-shadow: inset 0 4px 8px #000a, 0 0 calc(var(--cap) * 0.4) color-mix(in srgb, var(--c), transparent 40%); }
+.legend {
+  position: absolute;
+  bottom: calc(100% + var(--cap) * 0.16 + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  color: #f1e3c0;
+  font: 700 10px/1 ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 #000;
+  pointer-events: none;
+}
+
+/* ---- Narrow stations (two players on a phone): the buttons stack, their legends beside them, cut short if
+   a word does not fit (screen readers still hear all of it) ---- */
+@container station (max-width: 250px) {
+  .row { gap: 0; justify-content: space-between; }
+  .caps { flex-direction: column-reverse; margin-top: 0; }
+  .legend {
+    bottom: 50%; left: auto; right: calc(100% + var(--cap) * 0.16 + 6px); transform: translateY(50%);
+    /* the room between the stick and the button: the row less its padding, the stick, the button and its plate
+       (1.32 caps), the legend's own 6px off the plate and 6px clear of the stick */
+    max-width: calc(100cqi - var(--edge) - var(--mid) - var(--stick-w) - var(--cap) * 1.32 - 12px);
+    overflow: hidden; text-overflow: ellipsis;
+  }
+}
+@container station (max-width: 180px) {
+  .row { --stick-w: calc(var(--cap) * 1.4); --edge: 6px; }
+  .legend { font-size: 8px; letter-spacing: 0.04em; right: calc(100% + var(--cap) * 0.16 + 3px);
+    max-width: calc(100cqi - var(--edge) - var(--mid) - var(--stick-w) - var(--cap) * 1.32 - 9px); }
+}
+
+/* ---- Landscape: no panel; each station stands in its gutter beside the picture, buttons over the stick ---- */
+:host([layout="landscape"]) { container-type: normal; pointer-events: none; }
+:host([layout="landscape"]) .panel { background: none; box-shadow: none; transform: none; justify-content: space-between; align-items: flex-end; }
+:host([layout="landscape"]) .station { flex: none; container-type: normal; box-shadow: none; }
+:host([layout="landscape"]) .row {
+  --cap: var(--blip-deck-cap, 50px);
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  padding: 10px max(10px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-bottom));
+}
+:host([layout="landscape"]) .station[data-who="1"] .row { align-items: flex-end; padding-right: max(10px, env(safe-area-inset-right)); }
+:host([layout="landscape"]:not([seats="2"])) .station { flex: 1; }
+:host([layout="landscape"]:not([seats="2"])) .row { flex-direction: row; justify-content: space-between; align-items: flex-end; }
+:host([layout="landscape"]) :is(.stick, .dpad, .cap) { pointer-events: auto; }
+:host([layout="landscape"]) .caps { background: none; box-shadow: none; padding: 0; margin: 14px 0 0; }
+`;var $=[["up"],["up","right"],["right"],["down","right"],["down"],["down","left"],["left"],["up","left"]],w={engage:16,release:9,hyst:8,maxR:46};function g(d,t,e={}){let a={...w,...e},s={x:d,y:t},o=-1;return function(n,c){let p=n-s.x,l=c-s.y,r=Math.hypot(p,l);if(r>a.maxR&&(s.x=n-p*a.maxR/r,s.y=c-l*a.maxR/r,p=n-s.x,l=c-s.y),Math.hypot(p,l)<(o<0?a.engage:a.release))o=-1;else{let f=(Math.atan2(p,-l)*180/Math.PI+360)%360,y=Math.abs((f-o*45+540)%360-180);(o<0||y>22.5+a.hyst)&&(o=Math.round(f/45)%8)}return o<0?[]:$[o]}}function b(d,t,e=.32){return[t<-e&&"up",t>e&&"down",d<-e&&"left",d>e&&"right"].filter(Boolean)}var M=["up","right","down","left"],x={player:"Player {n}",stick:"Joystick",pad:"D-pad",button:"Button {n}",up:"Up",down:"Down",left:"Left",right:"Right"},L=12,k=20,E="M38 2H62Q68 2 68 8V29Q68 32 71 32H92Q98 32 98 38V62Q98 68 92 68H71Q68 68 68 71V92Q68 98 62 98H38Q32 98 32 92V71Q32 68 29 68H8Q2 68 2 62V38Q2 32 8 32H29Q32 32 32 29V8Q32 2 38 2Z",h=d=>String(d).replace(/[&<>"']/g,t=>`&#${t.charCodeAt(0)};`),m=d=>d?"p2":"",u=class extends HTMLElement{static observedAttributes=["buttons","seats","solo"];#i=x;#t=new Map;#e=new Map;#a=new Set;tuning={};constructor(){super(),this.attachShadow({mode:"open"}),this.addEventListener("touchstart",this.#c,{passive:!1});for(let t of["touchmove","touchend","touchcancel"])this.addEventListener(t,this.#c);this.addEventListener("pointerdown",this.#d);for(let t of["pointermove","pointerup","pointercancel"])this.addEventListener(t,this.#d);this.addEventListener("contextmenu",t=>t.preventDefault())}connectedCallback(){this.#n()}disconnectedCallback(){this.release()}attributeChangedCallback(){this.isConnected&&this.#n()}get labels(){return this.#i}set labels(t){this.#i={...x,...t},this.isConnected&&this.#n()}press(t,e){e?this.#a.add(t):this.#a.delete(t),this.#o()}release(){this.#t.clear(),this.#s(!0),this.#a.clear(),this.#o()}#h(){try{let t=JSON.parse(this.getAttribute("buttons"));if(Array.isArray(t)&&t.length)return t.slice(0,2).map(String)}catch{}return[""]}#n(){this.release();let t=this.#i,e=(i,n)=>h(i.replace("{n}",n+1)),a=this.#h(),s=this.getAttribute("seats")==="2"?2:1,o=i=>{let n=m(i),c=i===1&&this.hasAttribute("solo"),p=M.map(r=>`<span class="arm ${r}" data-name="${n}${r}" role="button" aria-label="${h(t[r])}"></span>`).join(""),l=a.map((r,f)=>`<span class="cap" part="button" data-name="${n}button${f+1}" role="button"
+        aria-label="${r?h(r):e(t.button,f)}">${r&&!c?`<span class="legend" aria-hidden="true">${h(r)}</span>`:""}</span>`).join("");return`<div class="station" part="station" data-who="${i}" role="group" aria-label="${e(t.player,i)}"${c?' aria-disabled="true"':""}><div class="row">
+        <div class="stick" part="stick" data-kind="stick" role="group" aria-label="${h(t.stick)}">
+          <span class="washer"></span><span class="lever"><span class="shaft"></span><span class="ball"></span></span>
+        </div>
+        <div class="dpad" part="dpad" data-kind="dpad" role="group" aria-label="${h(t.pad)}">
+          <svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="plastic" x2="0" y2="1"><stop offset="0"/><stop offset=".55"/><stop offset="1"/></linearGradient></defs><path d="${E}"/><circle cx="50" cy="50" r="7"/></svg>${p}
+        </div>
+        <div class="caps" part="buttons">${l}</div>
+      </div></div>`};this.shadowRoot.innerHTML=`<style>${v}</style><div class="panel" part="panel">${o(0)}${s===2?o(1):""}<slot></slot></div>`,this.#o()}#c=t=>{if(t.type==="touchstart"){t.preventDefault();for(let a of t.changedTouches)this.#p(a.identifier,a.clientX,a.clientY)}let e=new Set;for(let a of t.touches)e.add(a.identifier),this.#r(a.identifier,a.clientX,a.clientY);for(let a of this.#t.keys())typeof a=="number"&&!e.has(a)&&this.#t.delete(a);this.#s()};#d=t=>{if(t.pointerType==="touch")return;let e="p"+t.pointerId;if(t.type==="pointerdown"){t.preventDefault();try{this.setPointerCapture(t.pointerId)}catch{}this.#p(e,t.clientX,t.clientY)}else t.type==="pointermove"?this.#r(e,t.clientX,t.clientY):this.#t.delete(e);this.#s()};#p(t,e,a){let s=this.#l(e,a,".stick, .dpad, .cap");if(!s)return;let o=s.dataset.kind||"cap",i=Number(s.closest(".station").dataset.who);this.#t.set(t,{kind:o,who:i,el:s,gate:o==="stick"&&g(e,a,this.tuning),names:[]}),this.#r(t,e,a)}#r(t,e,a){let s=this.#t.get(t);if(!s)return;let o=m(s.who);if(s.kind==="stick")s.names=s.gate(e,a).map(i=>o+i);else if(s.kind==="dpad"){let i=s.el.getBoundingClientRect();s.names=b((e-i.left)/(i.width/2)-1,(a-i.top)/(i.height/2)-1).map(n=>o+n)}else{let i=this.#l(e,a,`.station[data-who="${s.who}"] .cap`);s.names=i?[i.dataset.name]:[]}}#l(t,e,a){let s=null,o=1/0;for(let i of this.shadowRoot.querySelectorAll(a)){let n=i.getBoundingClientRect();if(!n.width||i.closest("[aria-disabled]"))continue;let c=Math.hypot(Math.max(n.left-t,0,t-n.right),Math.max(n.top-e,0,e-n.bottom));c<o&&c<=(i.classList.contains("cap")?L:0)&&(s=i,o=c)}return s}#s(t=!1){let e=new Set([...this.#t.values()].flatMap(o=>o.names)),a=performance.now(),s=[];for(let[o,i]of this.#e)e.has(o)||(!t&&a-i<k?setTimeout(()=>this.#s(),k-(a-i)):(this.#e.delete(o),s.push([o,!1])));for(let o of e)this.#e.has(o)||(this.#e.set(o,a),s.push([o,!0]));if(s.length){this.#o();for(let[o,i]of s)this.dispatchEvent(new CustomEvent("blip-input",{detail:{name:o,down:i},bubbles:!0,composed:!0}))}}#o(){let t=e=>this.#e.has(e)||this.#a.has(e);for(let e of this.shadowRoot.querySelectorAll("[data-name]"))e.setAttribute("aria-pressed",t(e.dataset.name));for(let e of this.shadowRoot.querySelectorAll(".station")){let a=m(Number(e.dataset.who)),s=n=>t(a+n)?1:0,o=s("right")-s("left"),i=s("down")-s("up");o&&i&&(o*=Math.SQRT1_2,i*=Math.SQRT1_2),e.style.setProperty("--dx",o),e.style.setProperty("--dy",i)}}};customElements.get("blip-deck")||customElements.define("blip-deck",u);})();

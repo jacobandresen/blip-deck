@@ -1,50 +1,71 @@
 # blip-deck
 
-An arcade control deck as a web component, built with [Lit](https://lit.dev): two stations, each a ball-top
-joystick and a game pad with two caps, and one input layer for touch, mouse, keyboard and gamepad. It is the deck of
-[Blip Arcade](https://github.com/jacobandresen/blip) and the touch pad of
-[breadbin](https://github.com/jacobandresen/breadbin).
+An arcade control deck in one tag: a ball-top joystick or a d-pad, chunky buttons, one or two players. It plays
+well with thumbs, a mouse or a pen, and it tells you what was pressed.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jacobandresen/blip-deck@v1.0.0/blip-deck.css">
-<div id="topbar" class="kiosk-bar">
-  <blip-deck seats="2" buttons='[{"label":"JUMP"},{"label":"FIRE"}]'></blip-deck>
-</div>
-<script src="https://cdn.jsdelivr.net/gh/jacobandresen/blip-deck@v1.0.0/dist/blip-deck.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/jacobandresen/blip-deck@v2.0.0/dist/blip-deck.js"></script>
+
+<blip-deck buttons='["FIRE","JUMP"]'></blip-deck>
+
 <script>
-  BlipController.init({ canvas: document.querySelector('canvas'), buttons: [{ key: ' ', code: 'Space' }, { key: 'z', code: 'KeyZ' }] });
-  BlipController.bindButtons(document.getElementById('fire-buttons'));
-  BlipDeck.bindStick({ stick: document.getElementById('stick-base'), fire: document.getElementById('fire-buttons'),
-    dirs: { up: 'up', down: 'down', left: 'left', right: 'right' } });
+  document.querySelector('blip-deck').addEventListener('blip-input', (e) => {
+    console.log(e.detail.name, e.detail.down); // "up" true, "button1" false, …
+  });
 </script>
 ```
 
-- `<blip-deck>`: attributes `buttons` (JSON `[{ label }]`, one or two), `cap-label`, `seats` (1 or 2). It renders into
-  its own light DOM, so the page's CSS reaches it, and builds its parts as soon as it is connected: `#stick-base`,
-  `#fire-buttons`, `#snes-pad` and their `-p2` twins. Children you put inside stay after the stations. Caps and arms
-  carry `data-blip="<logical name>"`. It sets `data-caps`, `data-players` and `data-seats` on `<html>` (removed with
-  it); the page sets `data-layout` (`upright` or `landscape`), `data-controls` (`stick` or `pad`) and `data-has-touch`.
-- `BlipController`: `init(opts)`, `set(name, down)`, `releaseAll()`, `bindButtons(root)`, `bindDpad(pad, { names })`,
-  `bindDial(el, opts)`, `bindKeyboard()`, `bindGamepad(poll)`, `registerVisual(root)`. Names are `up` … `right`,
-  `button1` … `button4`, `p2up` … `p2button4`, `start`, `select`; a held name becomes a key event on `opts.canvas`.
-  Options are documented on `init` in `src/controller.js`.
-- `BlipDeck.bindStick(station, opts)` drives a stick with an 8-way gate; `BlipDeck.lean(stick, x, y)` leans its ball.
+That is all of it: no stylesheet, images or fonts to fetch, nothing to wire up. The deck draws itself in its own
+shadow root, so page styles cannot break it.
 
-The same names are exported from `src/index.js` for bundlers.
+## Attributes
 
-## Build and test
+| Attribute  | Values                    | Default    |                                                         |
+|------------|---------------------------|------------|---------------------------------------------------------|
+| `controls` | `stick`, `pad`            | `stick`    | a joystick or a d-pad                                   |
+| `buttons`  | JSON list of 1–2 legends  | `[""]`     | `'["FIRE","JUMP"]'`; `""` draws a button with no legend |
+| `seats`    | `1`, `2`                  | `1`        | stations on the panel                                   |
+| `solo`     | boolean                   | off        | station two is drawn but idle (nobody sits there)       |
+| `layout`   | `upright`, `landscape`    | `upright`  | a panel under the screen, or controls in its gutters    |
+
+In landscape the deck draws no panel: give it the screen (`position: fixed; inset: 0`) and it puts the controls
+in the corners, letting every other touch through to the game.
+
+## Events and methods
+
+- **`blip-input`** fires on every change, with `detail: { name, down }`. Names are `up`, `down`, `left`, `right`,
+  `button1`, `button2`, and the same with a `p2` prefix for station two (`p2up`, `p2button1`).
+- **`press(name, down)`** lights a control without firing: mirror the keyboard or a gamepad on the deck.
+- **`release()`** lets go of everything held, firing the releases (when the game pauses, say).
+- **`tuning`** sets the stick's feel: `{ engage: 16, release: 9, hyst: 8, maxR: 46 }` (pixels and degrees).
+
+## Accessibility and languages
+
+Every station, stick, arm and button carries a role and a label, and buttons report `aria-pressed`. Labels are
+English until you hand the deck your own: `deck.labels = { player: 'Spieler {n}', stick: 'Steuerknüppel', pad:
+'Steuerkreuz', button: 'Knopf {n}', up: 'Hoch', down: 'Runter', left: 'Links', right: 'Rechts' }`. The legends
+are yours already: they are what you pass in `buttons`.
+
+## Styling
+
+Set these on the element: `--blip-deck-cap` (button size), `--blip-deck-tilt` (24deg), `--blip-deck-panel`,
+`--blip-deck-ball`, `--blip-deck-button1`, `--blip-deck-button2`, `--blip-deck-p2-button2`. For more, style the
+parts: `blip-deck::part(panel)`, `::part(station)`, `::part(stick)`, `::part(dpad)`, `::part(buttons)` (a station's
+buttons) and `::part(button)`. Anything
+you put inside the element lies on the panel, leaning with it: position it yourself (a lamp, a dial).
+
+## Develop
 
 ```sh
 npm install
-npm run build   # dist/blip-deck.js: src/ and lit in one classic script (esbuild)
-npm test        # node:test on happy-dom; fails below 100% line, branch or function coverage
+npm test               # the gate and the element on happy-dom, at 100% coverage
+npm run test:browser   # every combination drawn in Chromium at phone to desktop widths: nothing overlaps
+npm run build          # dist/blip-deck.js, the one file a page loads
 ```
 
-`dist/` is committed, and jsDelivr serves it from a tag: blip and breadbin load
-`https://cdn.jsdelivr.net/gh/jacobandresen/blip-deck@<tag>/dist/blip-deck.js` and `.../blip-deck.css`. To release, build,
-commit, push a new tag (`v1.0.1`), and move the tag in blip (its pages and `DECK` in `web/sw.js`) and in breadbin
-(`docs/play/index.html`). A published tag never changes.
+Open `index.html` for every combination at once. A release is a new tag (`v2.0.1`); jsDelivr serves the built
+file from it.
 
 ## Licence
 
-MIT. The bundle includes Lit (BSD-3-Clause).
+MIT.
